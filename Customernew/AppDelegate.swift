@@ -8,6 +8,10 @@
 
 import UIKit
 import CoreData
+import FirebaseAuth
+import Firebase
+import FBSDKCoreKit
+import FBSDKLoginKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,8 +20,48 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        FirebaseApp.configure()
+        
+        ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
+
+        let loginViewController = LoginViewController()
+        let homeViewController = HomeViewController()
+        
+        let navigation:UINavigationController?
+        
+        if !AuthManager.sharedInstance.isLogin(){
+            navigation = UINavigationController(rootViewController: loginViewController)
+        }
+        else{
+            navigation = UINavigationController(rootViewController: homeViewController)
+        }
+        
+        self.window = UIWindow()
+        let screen:UIScreen = UIScreen.main
+        
+        self.window!.frame = screen.bounds
+        self.window?.backgroundColor = .white
+        self.window!.rootViewController = navigation
+        self.window!.makeKeyAndVisible()
+        
         return true
+    }
+    
+    func replaceWindow(_ newWindow: UIWindow) {
+        if let oldWindow = window {
+            newWindow.frame = oldWindow.frame
+            newWindow.windowLevel = oldWindow.windowLevel
+            newWindow.screen = oldWindow.screen
+            newWindow.isHidden = false
+            window = newWindow
+            oldWindow.removeFromSuperview()
+        }
+    }
+    
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        return ApplicationDelegate.shared.application(app, open: url, options: options)
+
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -36,6 +80,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        AppEvents.activateApp()
+        
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
